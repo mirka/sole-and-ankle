@@ -4,6 +4,7 @@ import styled from 'styled-components/macro';
 import { COLORS, WEIGHTS } from '../../constants';
 import { formatPrice, pluralize, isNewShoe } from '../../utils';
 import Spacer from '../Spacer';
+import VisuallyHidden from '../VisuallyHidden';
 
 const ShoeCard = ({
   slug,
@@ -31,19 +32,27 @@ const ShoeCard = ({
       ? 'new-release'
       : 'default'
 
+  const variantTagText = {
+    'on-sale': 'Sale',
+    'new-release': 'Just Released!',
+  }[variant];
+
   return (
     <Link href={`/shoe/${slug}`}>
       <Wrapper>
+        {variantTagText && <VariantTag variant={variant}>{variantTagText}</VariantTag>}
         <ImageWrapper>
           <Image alt="" src={imageSrc} />
         </ImageWrapper>
         <Spacer size={12} />
         <Row>
           <Name>{name}</Name>
-          <Price>{formatPrice(price)}</Price>
+          {salePrice && <VisuallyHidden>Regular price</VisuallyHidden>}
+          <Price as={salePrice && 'del'}>{formatPrice(price)}</Price>
         </Row>
         <Row>
-          <ColorInfo>{pluralize('Color', numOfColors)}</ColorInfo>
+          {salePrice && <SalePrice>{formatPrice(salePrice)}</SalePrice>}
+          <ColorInfo>{pluralize("Color", numOfColors)}</ColorInfo>
         </Row>
       </Wrapper>
     </Link>
@@ -55,7 +64,22 @@ const Link = styled.a`
   color: inherit;
 `;
 
-const Wrapper = styled.article``;
+const Wrapper = styled.article`
+  position: relative;
+`;
+
+const VariantTag = styled.div`
+  position: absolute;
+  top: 12px;
+  right: -4px;
+  z-index: 1;
+  padding: 8px;
+  border-radius: 2px;
+  background: ${props => props.variant === 'on-sale' ? COLORS.primary : COLORS.secondary};
+  color: ${COLORS.white};
+  font-size: ${14 / 16}rem;
+  font-weight: 700;
+`;
 
 const ImageWrapper = styled.div`
   position: relative;
@@ -66,6 +90,8 @@ const Image = styled.img`
 `;
 
 const Row = styled.div`
+  display: flex;
+  justify-content: space-between;
   font-size: 1rem;
 `;
 
@@ -81,6 +107,7 @@ const ColorInfo = styled.p`
 `;
 
 const SalePrice = styled.span`
+  order: 1;
   font-weight: ${WEIGHTS.medium};
   color: ${COLORS.primary};
 `;
